@@ -53,24 +53,38 @@ document.querySelectorAll(
 });
 
 // ===== CONTACT FORM =====
+const FORMSPREE_URL = 'https://formspree.io/f/xyklorqp';
+
 const form    = document.getElementById('contact-form');
 const success = document.getElementById('form-success');
 
-form.addEventListener('submit', (e) => {
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const btn = form.querySelector('button[type="submit"]');
+  const btn  = form.querySelector('button[type="submit"]');
   const text = btn.querySelector('.btn-text');
   text.textContent = 'Sending…';
   btn.disabled = true;
 
-  // Simulate send (replace with real endpoint/EmailJS/Formspree)
-  setTimeout(() => {
-    form.reset();
-    success.classList.add('show');
+  try {
+    const res = await fetch(FORMSPREE_URL, {
+      method:  'POST',
+      body:    new FormData(form),
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (res.ok) {
+      form.reset();
+      success.classList.add('show');
+      setTimeout(() => success.classList.remove('show'), 6000);
+    } else {
+      alert('Something went wrong. Please email us at info@ebservices.eu');
+    }
+  } catch {
+    alert('Something went wrong. Please email us at info@ebservices.eu');
+  } finally {
     text.textContent = 'Send Message';
     btn.disabled = false;
-    setTimeout(() => success.classList.remove('show'), 6000);
-  }, 1200);
+  }
 });
 
 // ===== FOOTER YEAR =====
