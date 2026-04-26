@@ -87,6 +87,27 @@ form.addEventListener('submit', async (e) => {
   }
 });
 
+// ===== FLOATING BUTTON TOOLTIPS =====
+const waTooltip  = document.querySelector('.wa-tooltip');
+const tcxLabel   = document.querySelector('.tcx-label');
+const tcxEl      = document.querySelector('call-us-selector');
+
+// Auto-show both labels 2s after load, hide after 5s
+setTimeout(() => {
+  waTooltip && waTooltip.classList.add('auto-show');
+  tcxLabel  && tcxLabel.classList.add('auto-show');
+  setTimeout(() => {
+    waTooltip && waTooltip.classList.remove('auto-show');
+    tcxLabel  && tcxLabel.classList.remove('auto-show');
+  }, 5000);
+}, 2000);
+
+// 3CX hover — show/hide its label
+if (tcxEl) {
+  tcxEl.addEventListener('mouseenter', () => tcxLabel && tcxLabel.classList.add('hovered'));
+  tcxEl.addEventListener('mouseleave', () => tcxLabel && tcxLabel.classList.remove('hovered'));
+}
+
 // ===== FOOTER YEAR =====
 document.getElementById('year').textContent = new Date().getFullYear();
 
