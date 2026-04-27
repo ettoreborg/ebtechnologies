@@ -46,15 +46,6 @@ document.querySelectorAll('.division-card, .contact-card, .ap').forEach(el => {
 
 document.getElementById('year').textContent = new Date().getFullYear();
 
-// WhatsApp tooltip auto-show
-const waTooltip = document.querySelector('.wa-tooltip');
-if (waTooltip) {
-  setTimeout(() => {
-    waTooltip.classList.add('auto-show');
-    setTimeout(() => waTooltip.classList.remove('auto-show'), 5000);
-  }, 2000);
-}
-
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', e => {
     const target = document.querySelector(anchor.getAttribute('href'));

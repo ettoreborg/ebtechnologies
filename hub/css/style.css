@@ -339,43 +339,6 @@ ul   { list-style: none; }
 .footer-bottom { text-align: center; }
 .footer-bottom p { font-size: .85rem; color: var(--text-muted); }
 
-/* ===== WHATSAPP BUTTON ===== */
-.whatsapp-btn {
-  position: fixed;
-  bottom: 24px;
-  right: 20px;
-  z-index: 999;
-  width: 60px;
-  height: 60px;
-  background: #25D366;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 20px rgba(37,211,102,.45);
-  transition: var(--transition);
-}
-.whatsapp-btn svg { width: 32px; height: 32px; }
-.whatsapp-btn:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(37,211,102,.55); }
-.btn-tooltip {
-  position: absolute;
-  right: 68px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: .82rem;
-  font-weight: 600;
-  padding: 7px 14px;
-  border-radius: 20px;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity .3s ease;
-  box-shadow: 0 3px 12px rgba(0,0,0,.2);
-}
-.wa-tooltip { background: #25D366; color: #fff; }
-.whatsapp-btn:hover .btn-tooltip { opacity: 1; }
-.btn-tooltip.auto-show { opacity: 1; }
-
 /* ===== ANIMATIONS ===== */
 .fade-in { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s ease; }
 .fade-in.visible { opacity: 1; transform: translateY(0); }
