@@ -115,6 +115,21 @@ ul { list-style: none; }
 .btn-lg { padding: 16px 32px; font-size: 1rem; }
 .btn-full { width: 100%; justify-content: center; }
 
+/* ===== 3CX WIDGET COLOUR OVERRIDE ===== */
+call-us-selector {
+  --call-us-main-accent-color:    #E53E3E;
+  --call-us-main-background-color: #ffffff;
+  --call-us-plate-background-color: #1E1E1E;
+  --call-us-plate-font-color:     #E6E6E6;
+  --call-us-main-font-color:      #292929;
+  --call-us-agent-bubble-color:   rgba(229,62,62,.15);
+}
+/* Offline state — dulled red instead of blue */
+call-us-selector.offline,
+call-us-selector[offline] {
+  --call-us-main-accent-color: #7A1E1E;
+}
+
 /* ===== TOP BAR ===== */
 .top-bar {
   position: fixed;

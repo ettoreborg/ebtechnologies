@@ -1,0 +1,21 @@
+{
+  "name": "EB Technology",
+  "short_name": "EB Technology",
+  "icons": [
+    {
+      "src": "/it/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/it/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#F5A623",
+  "background_color": "#0D0D0D",
+  "display": "standalone"
+}
