@@ -41,13 +41,16 @@ exports.handler = async (event) => {
 
     // Step 2 — Send chat message to queue extension
     // Try endpoints in order until one works
+    // Diagnostic: GET the chat endpoint to understand API structure
+    const diagRes  = await fetch(`${fqdn}/xapi/v1/chat`, {
+      method:  'GET',
+      headers: { 'Authorization': `Bearer ${access_token}`, 'Accept': 'application/json' }
+    });
+    const diagBody = await diagRes.text();
+    throw new Error(`DIAG [${diagRes.status}]: ${diagBody.substring(0, 500)}`);
+
     const endpoints = [
       { method: 'PUT',  url: `${fqdn}/xapi/v1/chat`,              body: { participantDn: queue, text: messageText } },
-      { method: 'POST', url: `${fqdn}/xapi/v1/Chat`,              body: { participantDn: queue, text: messageText } },
-      { method: 'POST', url: `${fqdn}/xapi/v1/chat/sessions`,     body: { participantDn: queue, text: messageText } },
-      { method: 'POST', url: `${fqdn}/xapi/v1/chat/messages`,     body: { participantDn: queue, text: messageText } },
-      { method: 'POST', url: `${fqdn}/xapi/v1/chat/send`,         body: { participantDn: queue, text: messageText } },
-      { method: 'POST', url: `${fqdn}/xapi/v1/Chat/Send`,         body: { participantDn: queue, text: messageText } },
     ];
 
     let chatBody = '';
