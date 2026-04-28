@@ -40,20 +40,30 @@ exports.handler = async (event) => {
     const { access_token } = JSON.parse(authBody);
 
     // Step 2 — Send chat message to queue extension
-    const chatRes = await fetch(`${fqdn}/api/v20/Chat/Send`, {
-      method:  'POST',
-      headers: {
-        'Authorization': `Bearer ${access_token}`,
-        'Content-Type':  'application/json'
-      },
-      body: JSON.stringify({
-        to:      queue || '800',
-        message: messageText
-      })
-    });
+    // Try endpoints in order until one works
+    const endpoints = [
+      { url: `${fqdn}/api/v20/Chat`,          body: { participantDn: queue, text: messageText } },
+      { url: `${fqdn}/api/v20/Chats`,         body: { participantDn: queue, text: messageText } },
+      { url: `${fqdn}/api/v20/Chat/Message`,  body: { to: queue, message: messageText } },
+      { url: `${fqdn}/xapi/v1/chat`,          body: { participantDn: queue, text: messageText } },
+    ];
 
-    const chatBody = await chatRes.text();
-    if (!chatRes.ok) throw new Error(`3CX chat failed [${chatRes.status}]: ${chatBody}`);
+    let chatBody = '';
+    let chatOk   = false;
+    let triedUrls = [];
+
+    for (const ep of endpoints) {
+      const chatRes = await fetch(ep.url, {
+        method:  'POST',
+        headers: { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify(ep.body)
+      });
+      chatBody = await chatRes.text();
+      triedUrls.push(`${ep.url} → ${chatRes.status}`);
+      if (chatRes.ok) { chatOk = true; break; }
+    }
+
+    if (!chatOk) throw new Error(`3CX chat failed. Tried: ${triedUrls.join(' | ')} | Last body: ${chatBody}`);
 
     return {
       statusCode: 200,
