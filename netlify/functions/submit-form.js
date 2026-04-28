@@ -28,10 +28,10 @@ exports.handler = async (event) => {
 
   try {
     // Step 1 — Authenticate with 3CX
-    const authRes = await fetch(`${fqdn}/api/oauth2/token`, {
+    const authRes = await fetch(`${fqdn}/connect/token`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body:    `grant_type=client_credentials&client_id=${clientId}&client_secret=${encodeURIComponent(clientSecret)}`
+      body:    `grant_type=client_credentials&client_id=${clientId}&client_secret=${encodeURIComponent(clientSecret)}&scope=all`
     });
 
     const authBody = await authRes.text();
