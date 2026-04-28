@@ -34,8 +34,10 @@ exports.handler = async (event) => {
       body:    `grant_type=client_credentials&client_id=${clientId}&client_secret=${encodeURIComponent(clientSecret)}`
     });
 
-    if (!authRes.ok) throw new Error(`3CX auth failed: ${authRes.status}`);
-    const { access_token } = await authRes.json();
+    const authBody = await authRes.text();
+    if (!authRes.ok) throw new Error(`3CX auth failed [${authRes.status}]: ${authBody}`);
+
+    const { access_token } = JSON.parse(authBody);
 
     // Step 2 — Send chat message to queue extension
     const chatRes = await fetch(`${fqdn}/api/v20/Chat/Send`, {
@@ -50,7 +52,8 @@ exports.handler = async (event) => {
       })
     });
 
-    if (!chatRes.ok) throw new Error(`3CX chat failed: ${chatRes.status}`);
+    const chatBody = await chatRes.text();
+    if (!chatRes.ok) throw new Error(`3CX chat failed [${chatRes.status}]: ${chatBody}`);
 
     return {
       statusCode: 200,
@@ -58,8 +61,6 @@ exports.handler = async (event) => {
     };
 
   } catch (err) {
-    console.error('3CX failed, falling back to Formspree:', err.message);
-
     // Fallback — Formspree email
     try {
       const fsRes = await fetch(formspree_url, {
@@ -69,14 +70,17 @@ exports.handler = async (event) => {
       });
 
       if (fsRes.ok) {
-        return { statusCode: 200, body: JSON.stringify({ success: true, via: 'email_fallback' }) };
+        return {
+          statusCode: 200,
+          body: JSON.stringify({ success: true, via: 'email_fallback', debug: err.message })
+        };
       }
       throw new Error('Formspree also failed');
 
     } catch (fallbackErr) {
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'Both 3CX and email failed. Please contact us directly.' })
+        body: JSON.stringify({ error: 'Both failed', debug: err.message })
       };
     }
   }
