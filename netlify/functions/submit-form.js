@@ -42,10 +42,12 @@ exports.handler = async (event) => {
     // Step 2 — Send chat message to queue extension
     // Try endpoints in order until one works
     const endpoints = [
-      { url: `${fqdn}/api/v20/Chat`,          body: { participantDn: queue, text: messageText } },
-      { url: `${fqdn}/api/v20/Chats`,         body: { participantDn: queue, text: messageText } },
-      { url: `${fqdn}/api/v20/Chat/Message`,  body: { to: queue, message: messageText } },
-      { url: `${fqdn}/xapi/v1/chat`,          body: { participantDn: queue, text: messageText } },
+      { method: 'PUT',  url: `${fqdn}/xapi/v1/chat`,              body: { participantDn: queue, text: messageText } },
+      { method: 'POST', url: `${fqdn}/xapi/v1/Chat`,              body: { participantDn: queue, text: messageText } },
+      { method: 'POST', url: `${fqdn}/xapi/v1/chat/sessions`,     body: { participantDn: queue, text: messageText } },
+      { method: 'POST', url: `${fqdn}/xapi/v1/chat/messages`,     body: { participantDn: queue, text: messageText } },
+      { method: 'POST', url: `${fqdn}/xapi/v1/chat/send`,         body: { participantDn: queue, text: messageText } },
+      { method: 'POST', url: `${fqdn}/xapi/v1/Chat/Send`,         body: { participantDn: queue, text: messageText } },
     ];
 
     let chatBody = '';
@@ -54,12 +56,12 @@ exports.handler = async (event) => {
 
     for (const ep of endpoints) {
       const chatRes = await fetch(ep.url, {
-        method:  'POST',
+        method:  ep.method || 'POST',
         headers: { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json' },
         body:    JSON.stringify(ep.body)
       });
       chatBody = await chatRes.text();
-      triedUrls.push(`${ep.url} → ${chatRes.status}`);
+      triedUrls.push(`${ep.method} ${ep.url} → ${chatRes.status}`);
       if (chatRes.ok) { chatOk = true; break; }
     }
 
