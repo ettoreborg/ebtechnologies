@@ -53,8 +53,6 @@ document.querySelectorAll(
 });
 
 // ===== CONTACT FORM =====
-const FORMSPREE_URL = 'https://formspree.io/f/xyklorqp';
-
 const form    = document.getElementById('contact-form');
 const success = document.getElementById('form-success');
 
@@ -65,11 +63,25 @@ form.addEventListener('submit', async (e) => {
   text.textContent = 'Sending…';
   btn.disabled = true;
 
+  const fd = new FormData(form);
+  const payload = {
+    name:           fd.get('name'),
+    company:        fd.get('company'),
+    email:          fd.get('email'),
+    phone:          fd.get('phone'),
+    service:        fd.get('service'),
+    contact_method: fd.get('contact_method'),
+    best_time:      fd.get('best_time'),
+    message:        fd.get('message'),
+    queue:          '800',
+    formspree_url:  'https://formspree.io/f/xyklorqp'
+  };
+
   try {
-    const res = await fetch(FORMSPREE_URL, {
+    const res = await fetch('/.netlify/functions/submit-form', {
       method:  'POST',
-      body:    new FormData(form),
-      headers: { 'Accept': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
     });
 
     if (res.ok) {
