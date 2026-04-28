@@ -41,34 +41,8 @@ exports.handler = async (event) => {
 
     // Step 2 — Send chat message to queue extension
     // Try endpoints in order until one works
-    // Diagnostic: GET the chat endpoint to understand API structure
-    const diagRes  = await fetch(`${fqdn}/xapi/v1/chat`, {
-      method:  'GET',
-      headers: { 'Authorization': `Bearer ${access_token}`, 'Accept': 'application/json' }
-    });
-    const diagBody = await diagRes.text();
-    throw new Error(`DIAG [${diagRes.status}]: ${diagBody.substring(0, 500)}`);
-
-    const endpoints = [
-      { method: 'PUT',  url: `${fqdn}/xapi/v1/chat`,              body: { participantDn: queue, text: messageText } },
-    ];
-
-    let chatBody = '';
-    let chatOk   = false;
-    let triedUrls = [];
-
-    for (const ep of endpoints) {
-      const chatRes = await fetch(ep.url, {
-        method:  ep.method || 'POST',
-        headers: { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json' },
-        body:    JSON.stringify(ep.body)
-      });
-      chatBody = await chatRes.text();
-      triedUrls.push(`${ep.method} ${ep.url} → ${chatRes.status}`);
-      if (chatRes.ok) { chatOk = true; break; }
-    }
-
-    if (!chatOk) throw new Error(`3CX chat failed. Tried: ${triedUrls.join(' | ')} | Last body: ${chatBody}`);
+    // 3CX chat API endpoint not yet confirmed — throw to use email fallback
+    throw new Error('3CX chat API endpoint not confirmed');
 
     return {
       statusCode: 200,
