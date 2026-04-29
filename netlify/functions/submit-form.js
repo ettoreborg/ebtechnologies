@@ -158,8 +158,9 @@ exports.handler = async (event) => {
       throw new Error(`3CX MyPhone login failed [${loginRes.status}]`);
     }
 
-    const sessionToken = extractSessionId(Buffer.from(loginBody));
-    if (!sessionToken) throw new Error('3CX login: session token not found in response');
+    const loginBuf     = Buffer.from(loginBody);
+    const sessionToken = extractSessionId(loginBuf);
+    if (!sessionToken) throw new Error('3CX login: no session token — raw:' + loginBuf.toString('base64'));
 
     // ── Step 2: Send chat ──────────────────────────────────────────────────
 
