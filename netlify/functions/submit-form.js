@@ -25,10 +25,10 @@ exports.handler = async (event) => {
   ].filter(Boolean).join('\n');
 
   try {
-    const extDn    = process.env.TCX_EXT_DN;
+    const authId   = process.env.TCX_AUTH_ID;
     const authPass = process.env.TCX_AUTH_PASS;
 
-    if (!extDn || !authPass) throw new Error('TCX_EXT_DN / TCX_AUTH_PASS not configured');
+    if (!authId || !authPass) throw new Error('TCX_AUTH_ID / TCX_AUTH_PASS not configured');
 
     // ── Protobuf helpers ───────────────────────────────────────────────────
 
@@ -150,7 +150,7 @@ exports.handler = async (event) => {
 
     // ── Step 1: Login ──────────────────────────────────────────────────────
 
-    const loginPayload = buildLoginRequest(extDn, authPass);
+    const loginPayload = buildLoginRequest(authId, authPass);
     const loginRes     = await sendRaw(loginPayload, null);
     const loginBody    = await loginRes.arrayBuffer();
 
