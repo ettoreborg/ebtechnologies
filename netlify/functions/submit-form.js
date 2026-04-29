@@ -30,6 +30,14 @@ exports.handler = async (event) => {
 
     if (!authId || !authPass) throw new Error('TCX_AUTH_ID / TCX_AUTH_PASS not configured');
 
+    // ── Credential check via OAuth2 password grant ─────────────────────────
+    const pwRes  = await fetch(`${fqdn}/connect/token`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    `grant_type=password&client_id=WebClient&username=${encodeURIComponent(authId)}&password=${encodeURIComponent(authPass)}`
+    });
+    const pwBody = await pwRes.text();
+    throw new Error(`OAuth2 cred check [${pwRes.status}]: ${pwBody.slice(0, 300)}`);
     // ── Protobuf helpers ───────────────────────────────────────────────────
 
     function writeVarint(value) {
