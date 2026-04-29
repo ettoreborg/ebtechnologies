@@ -40,10 +40,11 @@ exports.handler = async (event) => {
     });
     const { access_token } = await tokenRes.json();
     const headers  = { 'Authorization': `Bearer ${access_token}` };
-    const r = await fetch(`${fqdn}/xapi/v1/`, { headers });
-    const { value: entities } = await r.json();
-    const names = entities.map(e => e.name).join(', ');
-    throw new Error(`entities: ${names}`);
+    const r    = await fetch(`${fqdn}/xapi/v1/$metadata`, { headers });
+    const xml  = await r.text();
+    const actions = [...xml.matchAll(/<Action Name="([^"]+)"/g)].map(m => m[1]);
+    const funcs   = [...xml.matchAll(/<Function Name="([^"]+)"/g)].map(m => m[1]);
+    throw new Error(`Actions: ${actions.join(', ')} ||| Functions: ${funcs.join(', ')}`);
     // ── Protobuf helpers ───────────────────────────────────────────────────
 
     function writeVarint(value) {
