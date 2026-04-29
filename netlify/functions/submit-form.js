@@ -30,14 +30,21 @@ exports.handler = async (event) => {
 
     if (!authId || !authPass) throw new Error('TCX_AUTH_ID / TCX_AUTH_PASS not configured');
 
-    // ── Credential check via OAuth2 password grant ─────────────────────────
-    const pwRes  = await fetch(`${fqdn}/connect/token`, {
+    // ── Discover REST API via client_credentials + $metadata ───────────────
+    const clientId     = 'webcontformit';
+    const clientSecret = process.env.TCX_API_KEY;
+    const tokenRes  = await fetch(`${fqdn}/connect/token`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body:    `grant_type=password&client_id=WebClient&username=${encodeURIComponent(authId)}&password=${encodeURIComponent(authPass)}`
+      body:    `grant_type=client_credentials&client_id=${clientId}&client_secret=${encodeURIComponent(clientSecret)}&scope=all`
     });
-    const pwBody = await pwRes.text();
-    throw new Error(`OAuth2 cred check [${pwRes.status}]: ${pwBody.slice(0, 300)}`);
+    const { access_token } = await tokenRes.json();
+    const metaRes  = await fetch(`${fqdn}/xapi/v2/$metadata`, {
+      headers: { 'Authorization': `Bearer ${access_token}` }
+    });
+    const metaText = await metaRes.text();
+    const chatLines = metaText.split('\n').filter(l => /chat|message|talk|send/i.test(l)).join('\n');
+    throw new Error(`meta [${metaRes.status}] chat-lines: ${chatLines.slice(0, 800)}`);
     // ── Protobuf helpers ───────────────────────────────────────────────────
 
     function writeVarint(value) {
