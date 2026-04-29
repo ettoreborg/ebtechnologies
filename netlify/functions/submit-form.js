@@ -39,12 +39,21 @@ exports.handler = async (event) => {
       body:    `grant_type=client_credentials&client_id=${clientId}&client_secret=${encodeURIComponent(clientSecret)}&scope=all`
     });
     const { access_token } = await tokenRes.json();
-    const metaRes  = await fetch(`${fqdn}/xapi/v2/$metadata`, {
-      headers: { 'Authorization': `Bearer ${access_token}` }
-    });
-    const metaText = await metaRes.text();
-    const chatLines = metaText.split('\n').filter(l => /chat|message|talk|send/i.test(l)).join('\n');
-    throw new Error(`meta [${metaRes.status}] chat-lines: ${chatLines.slice(0, 800)}`);
+    const headers  = { 'Authorization': `Bearer ${access_token}` };
+    const probes   = [
+      '/xapi/v1/$metadata',
+      '/xapi/v1/',
+      '/xapi/v2/',
+      '/swagger/v1/swagger.json',
+    ];
+    const results = [];
+    for (const path of probes) {
+      const r    = await fetch(`${fqdn}${path}`, { headers });
+      const body = await r.text();
+      const chatLines = body.split('\n').filter(l => /chat|message|talk|send/i.test(l)).join(' | ');
+      results.push(`${path} [${r.status}] ${chatLines.slice(0, 200)}`);
+    }
+    throw new Error(results.join(' ||| '));
     // ── Protobuf helpers ───────────────────────────────────────────────────
 
     function writeVarint(value) {
