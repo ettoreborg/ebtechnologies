@@ -40,20 +40,10 @@ exports.handler = async (event) => {
     });
     const { access_token } = await tokenRes.json();
     const headers  = { 'Authorization': `Bearer ${access_token}` };
-    const probes   = [
-      '/xapi/v1/$metadata',
-      '/xapi/v1/',
-      '/xapi/v2/',
-      '/swagger/v1/swagger.json',
-    ];
-    const results = [];
-    for (const path of probes) {
-      const r    = await fetch(`${fqdn}${path}`, { headers });
-      const body = await r.text();
-      const chatLines = body.split('\n').filter(l => /chat|message|talk|send/i.test(l)).join(' | ');
-      results.push(`${path} [${r.status}] ${chatLines.slice(0, 200)}`);
-    }
-    throw new Error(results.join(' ||| '));
+    const r = await fetch(`${fqdn}/xapi/v1/`, { headers });
+    const { value: entities } = await r.json();
+    const names = entities.map(e => e.name).join(', ');
+    throw new Error(`entities: ${names}`);
     // ── Protobuf helpers ───────────────────────────────────────────────────
 
     function writeVarint(value) {
