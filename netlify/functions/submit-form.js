@@ -40,21 +40,26 @@ exports.handler = async (event) => {
     });
     const { access_token } = await tokenRes.json();
     const h = { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json' };
+
+    // Capture Allow header from 405 to find correct method
+    const chatProbe = await fetch(`${fqdn}/callcontrol/chat`, { method: 'POST', headers: h, body: '{}' });
+    const allowedMethods = chatProbe.headers.get('allow') || chatProbe.headers.get('Allow') || 'none';
+
+    // Try alternate structures
     const probes = [
-      ['POST', '/callcontrol/chat',                        { to: '800', body: 'test' }],
-      ['POST', '/callcontrol/chat',                        { participants: ['800'], message: 'test' }],
-      ['POST', '/callcontrol/chat',                        { dn: '800', message: 'test' }],
-      ['GET',  '/callcontrol/webcontformit/chat',          null],
-      ['POST', '/callcontrol/webcontformit/chat',          { to: '800', body: 'test' }],
-      ['POST', '/callcontrol/webcontformit/chat/800',      { message: 'test' }],
+      ['GET',   '/callcontrol/chat?dn=800',                           null],
+      ['PUT',   '/callcontrol/chat',                                  { to: '800', message: 'test' }],
+      ['GET',   '/callcontrol/webcontformit',                         null],
+      ['POST',  '/callcontrol/webcontformit/sendmessage',             { to: '800', message: 'test' }],
+      ['POST',  '/callcontrol/webcontformit/chat',                    { to: '800', message: 'test' }],
     ];
-    const results = [];
+    const results = [`405-Allow:${allowedMethods}`];
     for (const [method, path, payload] of probes) {
       const opts = { method, headers: h };
       if (payload) opts.body = JSON.stringify(payload);
       const r    = await fetch(`${fqdn}${path}`, opts);
       const body = await r.text();
-      results.push(`${method} ${path} [${r.status}] ${body.slice(0, 120)}`);
+      results.push(`${method} ${path} [${r.status}] ${body.slice(0, 100)}`);
     }
     throw new Error(results.join(' ||| '));
     // ── Protobuf helpers ───────────────────────────────────────────────────
