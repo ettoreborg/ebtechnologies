@@ -39,29 +39,11 @@ exports.handler = async (event) => {
       body:    `grant_type=client_credentials&client_id=${clientId}&client_secret=${encodeURIComponent(clientSecret)}&scope=all`
     });
     const { access_token } = await tokenRes.json();
-    const h    = { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json' };
-    const hAnon = { 'Content-Type': 'application/json' };
-    const probes = [
-      // Live chat / Talk API paths (no auth — these are public widget endpoints)
-      ['GET',  '/livechatapi/',                         null,   hAnon],
-      ['GET',  '/livechat/',                            null,   hAnon],
-      ['GET',  '/chatapi/',                             null,   hAnon],
-      ['GET',  '/api/v1/chat',                          null,   h],
-      // Full webcontformit DN info
-      ['GET',  '/callcontrol/webcontformit',            null,   h],
-      // Try GET on chat with extension filter
-      ['GET',  '/callcontrol/chat?ext=800',             null,   h],
-      ['GET',  '/callcontrol/chat?extension=800',       null,   h],
-    ];
-    const results = [];
-    for (const [method, path, payload, hdrs] of probes) {
-      const opts = { method, headers: hdrs };
-      if (payload) opts.body = JSON.stringify(payload);
-      const r    = await fetch(`${fqdn}${path}`, opts);
-      const body = await r.text();
-      results.push(`${method} ${path} [${r.status}] ${body.slice(0, 120)}`);
-    }
-    throw new Error(results.join(' ||| '));
+    // Decode JWT payload to inspect scopes and claims
+    const jwtPayload = JSON.parse(
+      Buffer.from(access_token.split('.')[1], 'base64').toString('utf8')
+    );
+    throw new Error('token claims: ' + JSON.stringify(jwtPayload));
     // ── Protobuf helpers ───────────────────────────────────────────────────
 
     function writeVarint(value) {
