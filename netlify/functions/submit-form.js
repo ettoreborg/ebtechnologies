@@ -39,27 +39,27 @@ exports.handler = async (event) => {
       body:    `grant_type=client_credentials&client_id=${clientId}&client_secret=${encodeURIComponent(clientSecret)}&scope=all`
     });
     const { access_token } = await tokenRes.json();
-    const h = { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json' };
-
-    // Capture Allow header from 405 to find correct method
-    const chatProbe = await fetch(`${fqdn}/callcontrol/chat`, { method: 'POST', headers: h, body: '{}' });
-    const allowedMethods = chatProbe.headers.get('allow') || chatProbe.headers.get('Allow') || 'none';
-
-    // Try alternate structures
+    const h    = { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json' };
+    const hAnon = { 'Content-Type': 'application/json' };
     const probes = [
-      ['GET',   '/callcontrol/chat?dn=800',                           null],
-      ['PUT',   '/callcontrol/chat',                                  { to: '800', message: 'test' }],
-      ['GET',   '/callcontrol/webcontformit',                         null],
-      ['POST',  '/callcontrol/webcontformit/sendmessage',             { to: '800', message: 'test' }],
-      ['POST',  '/callcontrol/webcontformit/chat',                    { to: '800', message: 'test' }],
+      // Live chat / Talk API paths (no auth — these are public widget endpoints)
+      ['GET',  '/livechatapi/',                         null,   hAnon],
+      ['GET',  '/livechat/',                            null,   hAnon],
+      ['GET',  '/chatapi/',                             null,   hAnon],
+      ['GET',  '/api/v1/chat',                          null,   h],
+      // Full webcontformit DN info
+      ['GET',  '/callcontrol/webcontformit',            null,   h],
+      // Try GET on chat with extension filter
+      ['GET',  '/callcontrol/chat?ext=800',             null,   h],
+      ['GET',  '/callcontrol/chat?extension=800',       null,   h],
     ];
-    const results = [`405-Allow:${allowedMethods}`];
-    for (const [method, path, payload] of probes) {
-      const opts = { method, headers: h };
+    const results = [];
+    for (const [method, path, payload, hdrs] of probes) {
+      const opts = { method, headers: hdrs };
       if (payload) opts.body = JSON.stringify(payload);
       const r    = await fetch(`${fqdn}${path}`, opts);
       const body = await r.text();
-      results.push(`${method} ${path} [${r.status}] ${body.slice(0, 100)}`);
+      results.push(`${method} ${path} [${r.status}] ${body.slice(0, 120)}`);
     }
     throw new Error(results.join(' ||| '));
     // ── Protobuf helpers ───────────────────────────────────────────────────
