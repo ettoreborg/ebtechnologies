@@ -41,19 +41,20 @@ exports.handler = async (event) => {
     const { access_token } = await tokenRes.json();
     const h = { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json' };
     const probes = [
-      ['GET',  '/callcontrol/'],
-      ['GET',  '/callcontrol/chat'],
-      ['GET',  '/callcontrol/chat/800'],
-      ['POST', '/callcontrol/chat/800/sendmessage'],
-      ['POST', '/callcontrol/chat/800/messages'],
+      ['POST', '/callcontrol/chat',                        { to: '800', body: 'test' }],
+      ['POST', '/callcontrol/chat',                        { participants: ['800'], message: 'test' }],
+      ['POST', '/callcontrol/chat',                        { dn: '800', message: 'test' }],
+      ['GET',  '/callcontrol/webcontformit/chat',          null],
+      ['POST', '/callcontrol/webcontformit/chat',          { to: '800', body: 'test' }],
+      ['POST', '/callcontrol/webcontformit/chat/800',      { message: 'test' }],
     ];
     const results = [];
-    for (const [method, path] of probes) {
+    for (const [method, path, payload] of probes) {
       const opts = { method, headers: h };
-      if (method === 'POST') opts.body = JSON.stringify({ message: 'test' });
+      if (payload) opts.body = JSON.stringify(payload);
       const r    = await fetch(`${fqdn}${path}`, opts);
       const body = await r.text();
-      results.push(`${method} ${path} [${r.status}] ${body.slice(0, 150)}`);
+      results.push(`${method} ${path} [${r.status}] ${body.slice(0, 120)}`);
     }
     throw new Error(results.join(' ||| '));
     // ── Protobuf helpers ───────────────────────────────────────────────────
