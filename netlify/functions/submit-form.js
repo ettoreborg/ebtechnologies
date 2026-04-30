@@ -39,12 +39,23 @@ exports.handler = async (event) => {
       body:    `grant_type=client_credentials&client_id=${clientId}&client_secret=${encodeURIComponent(clientSecret)}&scope=all`
     });
     const { access_token } = await tokenRes.json();
-    const headers  = { 'Authorization': `Bearer ${access_token}` };
-    const r    = await fetch(`${fqdn}/xapi/v1/$metadata`, { headers });
-    const xml  = await r.text();
-    const actions = [...xml.matchAll(/<Action Name="([^"]+)"/g)].map(m => m[1]);
-    const funcs   = [...xml.matchAll(/<Function Name="([^"]+)"/g)].map(m => m[1]);
-    throw new Error(`Actions: ${actions.join(', ')} ||| Functions: ${funcs.join(', ')}`);
+    const h = { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json' };
+    const probes = [
+      ['GET',  '/callcontrol/'],
+      ['GET',  '/callcontrol/chat'],
+      ['GET',  '/callcontrol/chat/800'],
+      ['POST', '/callcontrol/chat/800/sendmessage'],
+      ['POST', '/callcontrol/chat/800/messages'],
+    ];
+    const results = [];
+    for (const [method, path] of probes) {
+      const opts = { method, headers: h };
+      if (method === 'POST') opts.body = JSON.stringify({ message: 'test' });
+      const r    = await fetch(`${fqdn}${path}`, opts);
+      const body = await r.text();
+      results.push(`${method} ${path} [${r.status}] ${body.slice(0, 150)}`);
+    }
+    throw new Error(results.join(' ||| '));
     // ── Protobuf helpers ───────────────────────────────────────────────────
 
     function writeVarint(value) {
